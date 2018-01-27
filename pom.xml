@@ -1,0 +1,379 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.alr.gateway</groupId>
+  <artifactId>gateway</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0</version>
+  <name>gateway Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <parent>
+    <groupId>qq-cloud-central</groupId>
+    <artifactId>tars-parent</artifactId>
+    <version>1.0.1</version>
+  </parent>
+
+  <properties>
+    <json.version>2.6.0</json.version>
+    <junit.version>4.12</junit.version>
+    <netty.version>4.1.12.Final</netty.version>
+    <build.plugins.plugin.version>2.6</build.plugins.plugin.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <alr-utils.version>1.0.3</alr-utils.version>
+    <slf4j.version>1.7.5</slf4j.version>
+    <jedis.version>2.9.0</jedis.version>
+    <pinyin4j.version>2.5.0</pinyin4j.version>
+    <apache-commons-lang3.version>3.6</apache-commons-lang3.version>
+    <rocketmq.version>4.1.0-incubating</rocketmq.version>
+    <commons.collection.version>3.2.2</commons.collection.version>
+  </properties>
+
+  <dependencies>
+
+
+    <dependency>
+      <groupId>com.allere.grade</groupId>
+      <artifactId>allere-grade</artifactId>
+      <version>2.9.18</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${json.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${json.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${json.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.rocketmq</groupId>
+      <artifactId>rocketmq-client</artifactId>
+      <version>${rocketmq.version}</version>
+    </dependency>
+   <!-- <dependency>
+      <groupId>org.apache.rocketmq</groupId>
+      <artifactId>rocketmq-namesrv</artifactId>
+      <version>${rocketmq.version}</version>
+    </dependency>-->
+   <!-- <dependency>
+      <groupId>org.apache.rocketmq</groupId>
+      <artifactId>rocketmq-store</artifactId>
+      <version>${rocketmq.version}</version>
+    </dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>org.apache.rocketmq</groupId>-->
+      <!--<artifactId>rocketmq-srvutil</artifactId>-->
+      <!--<version>${rocketmq.version}</version>-->
+    <!--</dependency>-->
+    <dependency>
+      <groupId>org.apache.rocketmq</groupId>
+      <artifactId>rocketmq-common</artifactId>
+      <version>${rocketmq.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>${commons.collection.version}</version>
+    </dependency>
+
+
+
+    <dependency>
+      <groupId>qq-cloud-central</groupId>
+      <artifactId>tars-client</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.allere.core</groupId>
+      <artifactId>alr-utils</artifactId>
+      <version>${alr-utils.version}</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${apache-commons-lang3.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+      <version>${netty.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>${jedis.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.belerweb</groupId>
+      <artifactId>pinyin4j</artifactId>
+      <version>${pinyin4j.version}</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <finalName>gateway</finalName>
+
+
+    <resources>
+      <resource>
+        <targetPath>${project.build.directory}/resources</targetPath>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <encoding>UTF8</encoding>
+          <compilerArguments>
+            <extdirs>lib</extdirs>
+          </compilerArguments>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.19.1</version>
+        <configuration>
+          <forkMode>once</forkMode>
+          <argLine>-Dfile.encoding=UTF-8</argLine>
+          <systemProperties>
+            <property>
+              <name>net.sourceforge.cobertura.datafile</name>
+              <value>target/cobertura/cobertura.ser</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
+        <artifactId>svn-revision-number-maven-plugin</artifactId>
+        <version>1.13</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.tmatesoft.svnkit</groupId>
+            <artifactId>svnkit</artifactId>
+            <version>1.8.7</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <entries>
+            <entry>
+              <prefix>svn</prefix>
+            </entry>
+          </entries>
+        </configuration>
+      </plugin>
+
+      <!--<plugin>-->
+        <!--<groupId>org.apache.maven.plugins</groupId>-->
+        <!--<artifactId>maven-dependency-plugin</artifactId>-->
+        <!--<executions>-->
+          <!--<execution>-->
+            <!--<id>copy</id>-->
+            <!--<phase>package</phase>-->
+            <!--<goals>-->
+              <!--<goal>copy-dependencies</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+              <!--<outputDirectory>-->
+                <!--${project.build.directory}/lib-->
+              <!--</outputDirectory>-->
+            <!--</configuration>-->
+          <!--</execution>-->
+        <!--</executions>-->
+      <!--</plugin>-->
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${build.plugins.plugin.version}</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>lib/</classpathPrefix>
+            </manifest>
+            <manifestEntries>
+              <svn>${svn.revision}</svn>
+              <time>UTC ${maven.build.timestamp}</time>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>qq-cloud-central</groupId>
+        <artifactId>tars-maven-plugin</artifactId>
+        <version>${project.parent.version}</version>
+        <configuration>
+          <tars2JavaConfig>
+            <tarsFiles>
+              <tarsFile>${basedir}/src/main/resources/um.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/loc.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/gm.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/lifeRecord.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/rc.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/shard.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/pqb.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/global.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/gameQuestion.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/gameCatalog.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/game.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/qbu.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/qus.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/rqb.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/fb.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/mall.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/credits.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/task.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/appr_comment.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/conf.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/RCQuestion.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/ms.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/pet.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/petCatalog.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/teaching_research.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/activity.tars</tarsFile>
+              <tarsFile>${basedir}/src/main/resources/handWritingNodeJS.tars</tarsFile>
+            </tarsFiles>
+            <tarsFileCharset>UTF-8</tarsFileCharset>
+            <servant>false</servant>
+            <srcPath>${basedir}/src/main/java</srcPath>
+            <charset>UTF-8</charset>
+            <packagePrefixName>com.alr.gateway.tars.</packagePrefixName>
+          </tars2JavaConfig>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>appassembler-maven-plugin</artifactId>
+        <version>2.0.0</version>
+        <executions>
+          <execution>
+            <id>generate start scripts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>assemble</goal>
+            </goals>
+            <configuration>
+              <repositoryLayout>flat</repositoryLayout>
+              <programs>
+                <program>
+                  <!-- 通过批处理 运行Main类 -->
+                  <mainClass>
+                    com.alr.gateway.Main
+                  </mainClass>
+                  <name>init_app</name>
+                </program>
+              </programs>
+            </configuration>
+          </execution>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>generate-daemons</goal>
+            </goals>
+            <configuration>
+              <repositoryLayout>flat</repositoryLayout>
+              <target>${project.build.directory}/wrapper</target>
+              <!--<includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>-->
+              <useDaemonIdAsWrapperConfName>true</useDaemonIdAsWrapperConfName>
+              <configurationSourceDirectory>etc</configurationSourceDirectory>
+              <copyConfigurationDirectory>true</copyConfigurationDirectory>
+              <daemons>
+                <daemon>
+                  <id>gateway</id>
+                  <!-- 打包成windows服务的Main类 -->
+                  <mainClass>com.alr.gateway.Main</mainClass>
+                  <!-- <commandLineArguments> <commandLineArgument>start</commandLineArgument>
+                      </commandLineArguments> -->
+                  <!-- <jvmSettings> <initialMemorySize>20M</initialMemorySize> <maxMemorySize>200M</maxMemorySize>
+                      <maxStackSize>128M</maxStackSize> </jvmSettings> -->
+                  <platforms>
+                    <platform>jsw</platform>
+                  </platforms>
+                  <generatorConfigurations>
+                    <generatorConfiguration>
+                      <generator>jsw</generator>
+                      <includes>
+                        <!--<include>linux-x86-32</include>-->
+                        <include>linux-x86-64</include>
+                        <!--<include>macosx-universal-32</include>-->
+                        <!--<include>macosx-universal-64</include>-->
+                        <!--<include>windows-x86-32</include>-->
+                        <!--<include>windows-x86-64</include>-->
+                      </includes>
+                      <configuration>
+                        <property>
+                          <name>configuration.directory.in.classpath.first</name>
+                          <value>conf</value>
+                        </property>
+                      </configuration>
+                    </generatorConfiguration>
+                  </generatorConfigurations>
+                </daemon>
+              </daemons>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+</project>

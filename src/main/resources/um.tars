@@ -1,0 +1,236 @@
+
+module UmServants{
+
+	const string ROLE_FIRST_GUARDIAN  = "GAF";  //第一监护人
+	const string ROLE_SECOND_GUARDIAN = "GAS";  //第二监护人
+	const string ROLE_STUDENT         = "STU";  //学生
+	const string ROLE_TEACHER         = "TCH";  //老师
+
+	//老师学生的默认头像
+	const string DEFAULT_AVATAR_TEACHER_MALE   = "default";
+	const string DEFAULT_AVATAR_TEACHER_FEMALE = "default";
+	const string DEFAULT_AVATAR_STUDENT_MALE   = "default";
+	const string DEFAULT_AVATAR_STUDENT_FEMALE = "default";
+
+    const int LICENSE_STATUS_UNAVAILABLE = 0;  //不可用
+    const int LICENSE_STATUS_AVAILABLE   = 1;  //可用
+
+    const int GENDER_FEMALE = 0;  //女
+    const int GENDER_MALE   = 1;  //男
+
+    const int TEACHER_TYPE_REGULAR_SCHOOL     = 100; //全日制学校老师
+    const int TEACHER_TYPE_UNREGULATED_SCHOOL = 101; //非全日制学校
+
+    const int ERROR_CODE_UNKNOWN             = 0xFFFF; //未知错误
+    const int ERROR_CODE_NOT_SUPPORTED_OPER  = -2;//不支持的操作
+    const int ERROR_CODE_OK                  = 0; //没有错误
+    const int ERROR_CODE_PARAMETERS          = 1; //参数错误
+
+    const int ERROR_CODE_ACCOUNT_NOT_EXIST   = 2; //账号不存在
+    const int ERROR_CODE_PASSWORD_FAIL       = 3; //密码错误
+    const int ERROR_CODE_ACCOUNT_LOCKED      = 4; //账号被锁定
+    const int ERROR_CODE_ACCOUNT_EXIST       = 5; //账号已经存在
+
+    struct AccountReg{
+        0 optional string nickname;
+        1 optional string realname;
+        2 require int gender;
+        3 require string phone;
+        4 optional string email;
+        5 optional string avatar;
+        6 require string role;
+        7 require string password;
+    };
+
+    struct Account{
+        0 require string id;
+        1 require string username;
+        2 require string realname;
+        3 require int gender;
+        4 require string role;
+        5 optional string avatar;
+        6 optional string email;
+        7 optional string nickname;
+        8 optional string phone;
+        9 optional string updateTime;
+        10 optional string createTime;
+    };
+
+    struct TeacherExtra{
+        0 optional string academicLicence;
+        1 optional string title;
+        2 optional int type;
+        3 optional bool visitor;
+        4 optional string schoolId;
+    };
+
+    struct TeacherReg{
+        0 require string realname;
+        1 require string password;
+        2 require string telephone;
+        3 require int gender;
+        4 optional string email;
+        5 optional TeacherExtra extra;
+    };
+
+
+    struct StudentReg{
+        0 require string realname;
+        1 require int gender;
+        2 require int relationWithGuardian;
+        3 require string password;
+        4 optional int relationWithSecGuardian;
+    };
+
+    struct GuardianReg{
+        0 require string realname;
+        1 require string password;
+        2 require string telephone;
+        3 require string role;
+        4 optional int gender;
+        5 optional string email;
+        6 optional vector<StudentReg> stuRegs;
+    };
+
+    struct GuardianInfo{
+        0 require string id;
+        1 require string loginName;
+        2 require string realName;
+        3 require string password;
+        4 require string telephone;
+        5 require string role;
+        6 optional int gender;
+        7 optional string email;
+        8 optional map<string,string> stuId2Relation;
+    };
+
+    struct SecurityQuestion{
+        0 require int id;
+        1 optional string question;
+        2 optional string answer;
+    };
+
+    struct RegisterUser{
+        1 require string username;
+        2 require string accountId;
+        3 require string realname;
+    };
+
+    struct StudentExtra {
+        0 require string id;
+        1 require string username;
+        2 require string realname;
+        3 require int gender;
+        4 require string role;
+        5 optional string avatar;
+        6 optional string email;
+        7 optional string nickname;
+        8 optional string guardianId;
+        9 optional int relationWithGuardian;
+    };
+
+    struct StudentGuardianInfo{
+        0 optional string id;
+        1 optional string username;
+        2 optional string realname;
+        3 optional vector<GuardianInfo> guardianInfos;
+    };
+
+    interface Um{
+
+        /**校验账户的有效性*/
+        int validateByNickname(string nickname);
+        int validateByTelAndRole(string tel, string role);
+        int validateByEmailAndRole(string email, string role);
+
+        int validateStuDuplicateNameByStuNameAndSids(string name, vector<string> stuIds, out vector<Account> guardiansHolder);
+
+        /**用户登录，如果登录成功，返回用户信息*/
+        int loginByUsername(string username, string password, out Account account);
+        int loginByNickname(string nickname, string password, out Account account);
+
+        int findAccountsByTelAndRole(string telephone, string role, out vector<Account> accountsHolder);
+
+        /**创建一个独立的账户*/
+        int createAccount( AccountReg account, out Account acc);
+
+        /**更改账户属性*/
+        int changeAccount(Account account);
+
+        /**创建带有老师额外属性的老师账户*/
+        int createTeacherWithExtra(TeacherReg tchReg, bool simulatedGuardianAndStu, out map<string, vector<RegisterUser>> roleClassifiedRegisterUserDict);
+
+        /**创建监护人、学生账户*/
+        int createGuardianAndStuWithRelation(GuardianReg guardianReg, out RegisterUser guardian, out vector<RegisterUser> students);
+
+        /**创建第二监护人*/
+        int createSecondGuardian(string firstGuardianId,map<string,string> id2Relation,GuardianReg guardianReg,out Account guardianAccount);
+
+        /**删除第二监护人*/
+        int deleteSecondGuardianBySecondGuardianId(string secondGuardianId);
+
+        int deleteAccountById(string id);
+
+        int deleteParentStuRelByParentIdOrStudentId(string parentId,string stuId);
+
+        /**设置老师额外属性*/
+        int setTeacherExtraByAccountId(string accountId, TeacherExtra extra);
+
+        /**通过账户ID更改密码*/
+        int changePasswordByAccountId(string accountId, string newPw, string oldPw);
+
+        /**通过账户ID更改关联手机*/
+        int changeTelephoneByAccountId(string accountId, string newTelephone);
+
+        /**监护人更改密码*/
+        int changeGuardianPwdByAccountIdAndStuIds(string guardianId, vector<string> stuIds, string newPwd);
+
+        /**通过用户名更改密码*/
+        int changePasswordByUsername(string username, string pw);
+
+        /**根据学生的ID查找学生的监护人信息*/
+        int findGuardianByStuId(string stuId, out vector<Account> guardians);
+
+        int findGuardianByStuIds(vector<string> stuIds, out vector<StudentGuardianInfo> studentGuardianInfosHolder);
+
+        /**根据监护人的ID查找学生账户信息*/
+        int findStuByGuardianId(string guardianId, out vector<StudentExtra> studentsExtra);
+
+        int findStuByGuardianIds(vector<string> guardianIds, out vector<StudentExtra> studentsExtra);
+
+        int findStuByGuardianUsername(string username, out vector<StudentExtra> studentsExtraHolder, out string telephone);
+
+        int findOtherGuardianByGuardianId(string guardianId, out vector<GuardianInfo> guardians);
+
+        /**根据用户ID查找用户基本信息*/
+        int findAccountById(string accountId, out Account account);
+
+        int findAccountByUsername(string username, out Account account);
+
+         int findAccountsByUsernameOrRealName(string username,string realName, out vector<Account> accountsHolder);
+
+        /**根据用户ID集合批量查找用户*/
+        int findAccountsByIds(vector<string> accountIds,out vector<Account> accounts);
+
+        int findAlphabetAccountsByIds(vector<string> accountIds,out map<string, vector<Account>> alphabet2Accounts);
+
+        /**根据不同的角色获取不同的账户的安全性问题*/
+        int getSecurityQuestions(string accountId, int quantity, out vector<SecurityQuestion> securityQuestions);
+
+        int getSecurityQuestionsByUsername(string username, int quantity, out vector<SecurityQuestion> securityQuestions);
+
+        /**设置安全问题答案*/
+        int setSecurityQuestions(string accountId, vector<SecurityQuestion> answers);
+
+        //添加家长孩子
+        int createStudentByGuardianId(StudentReg studentReg,string guardianId,out Account accountStudent);
+
+        //查询一个家长有几个孩子
+        int getStudentCountByGuardianId(string guardianId,out int countNumber);
+
+        //更改家长和学生的关系
+        int updateStudentAndStuGuarRelBySIdAndNameAndGenderAndRelationAndGId(string studentId,string name,int gender,int relation,string guardianId);
+
+
+    };
+};
