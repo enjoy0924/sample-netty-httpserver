@@ -6,7 +6,6 @@ import com.altas.core.annotation.pojo.AnnotationParam;
 import com.altas.core.annotation.pojo.ConsumeConstraint;
 import com.altas.core.annotation.pojo.PermissionConstraint;
 import com.altas.core.annotation.pojo.ProduceConstraint;
-import com.alr.core.annotation.restful.*;
 import com.altas.core.annotation.restful.*;
 import com.altas.core.annotation.restful.enumeration.HttpMethod;
 import com.altas.gateway.constant.CONST;
@@ -430,11 +429,11 @@ public class OpenApiDocTools {
             param.setIndex(i);
 
             do {
-                KvParam kvParam = parameters[i].getAnnotation(KvParam.class);
-                if (null != kvParam) {
-                    param.setParamName(kvParam.value());
+                FormParam formParam = parameters[i].getAnnotation(FormParam.class);
+                if (null != formParam) {
+                    param.setParamName(formParam.value());
                     param.setParamType(AnnotationParam.PARAM_TYPE_QUERY);
-                    param.getConstraint().setRequired(kvParam.required());
+                    param.getConstraint().setRequired(formParam.required());
                     break;
                 }
 
