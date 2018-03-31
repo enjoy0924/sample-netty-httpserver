@@ -1,6 +1,6 @@
 package com.altas.gateway.core;
 
-import com.altas.gateway.loader.ConfigUtils;
+import com.altas.gateway.loader.GlobalConfig;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -22,7 +22,7 @@ public class HttpServerInitializer  extends ChannelInitializer<SocketChannel> {
         p.addLast(new HttpObjectAggregator(1024 * 1024));
         p.addLast(new HttpServerInboundHandler());
 
-        p.addFirst("ping", new IdleStateHandler(ConfigUtils.instance().getIdleTimeout(), 15, 10, TimeUnit.SECONDS));
+        p.addFirst("ping", new IdleStateHandler(GlobalConfig.instance().getIdleTimeout(), 15, 10, TimeUnit.SECONDS));
 
     }
 }

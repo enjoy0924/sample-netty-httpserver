@@ -42,12 +42,12 @@ public class UrlHelper {
             return retList;
         }
         //正则匹配url其中{}里面的内容，如/door/{db|dqb|rqb}
-        Pattern pattern = Pattern.compile(CONST.PATTERN_BRACES_INNER_WITHOUT_BRACES);
+        Pattern pattern = Pattern.compile("\\{.*\\}");
         Matcher matcher = pattern.matcher(targetUrl);
         if(matcher.find()){
             String[] urls= matcher.group().split("\\|");
             for(String url : urls){
-                retList.add(targetUrl.replaceAll(CONST.PATTERN_BRACES_INNER_WITH_BRACES,url));
+                retList.add(targetUrl.replaceAll("\\{.*\\}",url));
             }
             return retList;
         }

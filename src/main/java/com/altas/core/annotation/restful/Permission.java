@@ -1,5 +1,7 @@
 package com.altas.core.annotation.restful;
 
+import com.altas.gateway.constant.CONST;
+
 import java.lang.annotation.*;
 
 /**
@@ -9,5 +11,5 @@ import java.lang.annotation.*;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Permission {
-    String value() default "alr:um:authz";
+    String value() default CONST.PERMISSION_NONE;
 }

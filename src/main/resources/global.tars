@@ -1,0 +1,8 @@
+module GlobalServants{
+
+	const int ERROR_CODE_OK      = 0x0000;
+	const int ERROR_CODE_UNKNOWN = 0xFFFF;
+
+    const int ERROR_CODE_USER_SESSION_HAS_LOST     = 0x1001;
+    const int ERROR_CODE_USER_LOGIN_IN_OTHER_PLACE = 0x1002;
+}

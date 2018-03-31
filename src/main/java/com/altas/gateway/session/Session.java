@@ -1,20 +1,14 @@
 package com.altas.gateway.session;
 
-import com.altas.gateway.constant.CONST;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by G_dragon on 2017/7/12.
- */
 public class Session implements Serializable {
     private String sessionId;
     private String userName;
 
-    private int role;
     private SessionState sessionState;
     private List<String> permissionList;
     private Map<String,Object> attributeMap =new ConcurrentHashMap<>();
@@ -25,7 +19,6 @@ public class Session implements Serializable {
     public Session(String sessionId) {
         this.sessionId = sessionId;
         sessionState = SessionState.NOT_LOGIN;
-        role = CONST.LOGIN_ROLE_NORMAL;
     }
 
     public String getSessionId() {
@@ -82,13 +75,5 @@ public class Session implements Serializable {
 
     public void setGender(int gender) {
         this.gender = gender;
-    }
-
-    public int getRole() {
-        return role;
-    }
-
-    public void setRole(int role) {
-        this.role = role;
     }
 }

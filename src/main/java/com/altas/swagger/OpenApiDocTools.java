@@ -8,9 +8,7 @@ import com.altas.core.annotation.pojo.PermissionConstraint;
 import com.altas.core.annotation.pojo.ProduceConstraint;
 import com.altas.core.annotation.restful.*;
 import com.altas.core.annotation.restful.enumeration.HttpMethod;
-import com.altas.gateway.constant.CONST;
 import com.altas.gateway.exception.UrlRepeatException;
-import com.altas.gateway.loader.ConfigUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -32,14 +30,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class OpenApiDocTools {
 
     public static void main(String[] argv){
 
         List<String> apiBasePackages = new ArrayList<>();
-        apiBasePackages.add("com.alr.api");
+        apiBasePackages.add("com.altas.api");
 
         try {
 
@@ -236,7 +233,7 @@ public class OpenApiDocTools {
         List<SecurityRequirement> securityRequirements = new ArrayList<>();
 
         SecurityRequirement securityRequirement = new SecurityRequirement();
-        securityRequirement.addList(permissionConstraint.getMultiPermissionSeparator());
+        securityRequirement.addList("permission",permissionConstraint.getPermissions());
 
         return securityRequirements;
     }
@@ -279,6 +276,9 @@ public class OpenApiDocTools {
         schema.required(requiredItem);
         mediaType.setSchema(schema);
         content.addMediaType(consumeConstraint.getMimeType().getType(), mediaType);
+
+        //TODO 设置参数的例子
+        mediaType.getExamples();
 
         requestBody.setContent(content);
 
@@ -402,20 +402,9 @@ public class OpenApiDocTools {
 
         Permission permission = method.getAnnotation(Permission.class);
         if (null != permission) {
-            Map<String, String> allPermissionMap = ConfigUtils.instance().getAllPermissionMap();
             String permissionValue = permission.value();
-            Map<String, String> permissionMap;
-            if (null == permissionValue) {
-                permissionConstraint.setPermissionMap(null);
-            } else {
-                if (permissionValue.contains(CONST.MULTI_PERMISSION_PEPARATOR_ADD)) {
-//                    permissionMap = formatPermissionValueToMap(permissionValue, CONST.MULTI_PERMISSION_PEPARATOR_ADD, allPermissionMap);
-                    permissionConstraint.setMultiPermissionSeparator(CONST.MULTI_PERMISSION_PEPARATOR_ADD);
-                } else {
-//                    permissionMap = formatPermissionValueToMap(permissionValue, CONST.MULTI_PERMISSION_PEPARATOR_OR, allPermissionMap);
-                    permissionConstraint.setMultiPermissionSeparator(CONST.MULTI_PERMISSION_PEPARATOR_OR);
-                }
-//                permissionConstraint.setPermissionMap(permissionMap);
+            if (null != permissionValue) {
+                permissionConstraint.addPermissions(permissionValue,";");
             }
         }
         return permissionConstraint;

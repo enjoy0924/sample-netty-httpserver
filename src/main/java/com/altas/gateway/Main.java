@@ -1,17 +1,11 @@
 package com.altas.gateway;
 
 import com.altas.cache.redis.JedisTemplate;
-import com.altas.component.GateWayObserverManager;
-import com.altas.component.mq.RocketMQAdapter;
-import com.altas.component.observer.NotifyObserver;
-import com.alr.core.utils.LoggerHelper;
-import com.alr.dto.DefaultSystemPaper;
-import com.alr.dto.rc.generateQuestion.ResolveErrorQuestionLevel;
 import com.altas.gateway.core.HttpServer;
-import com.altas.gateway.loader.ConfigUtils;
+import com.altas.gateway.loader.GlobalConfig;
 import com.altas.gateway.loader.HttpRequestHandlerLoader;
 import com.altas.gateway.tars.TarsLoader;
-import com.altas.push.PushManager;
+import com.altas.gateway.utils.LoggerHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,21 +20,14 @@ public class Main {
 
         do {
             //1.加载配置文件
-            boolean loadConfigSuccess = ConfigUtils.instance().loadConfig();
+            boolean loadConfigSuccess = GlobalConfig.instance().loadConfig();
             if (!loadConfigSuccess) {
                 LoggerHelper.error("load config [gateway.properties] failed!");
                 break;
             }
 
-            PushManager.instance().initialize();
-
             //2.加载redis集群配置
-            JedisTemplate.instance().loadJedisConfig(ConfigUtils.instance().getJedisConfig());
-
-            //5.初始化RocketMq
-            GateWayObserverManager.instance().register(NotifyObserver.instance());
-
-            RocketMQAdapter.initializeAdapter("", ConfigUtils.instance().getRocketMqConsumerGroup(), ConfigUtils.instance().getRocketMqNameSrvAddr());
+            JedisTemplate.instance().loadJedisConfig(GlobalConfig.instance().getJedisConfig());
 
             //3.加载tars
             boolean loadTars = TarsLoader.instance().loadTars();
@@ -50,40 +37,28 @@ public class Main {
             }
 
             //4.初始化URL映射关系
-            List<String> packageNames = Arrays.asList(ConfigUtils.instance().getPackageNames().split(";"));
+            List<String> packageNames = Arrays.asList(GlobalConfig.instance().getPackageNames().split(";"));
             boolean loadUrlDictFromAnnotationSuccess = HttpRequestHandlerLoader.getInstance().loadUrlDictFromAnnotation(packageNames);
             if (!loadUrlDictFromAnnotationSuccess) {
                 LoggerHelper.error("load url function mapping from annotation failed!");
                 break;
             }
 
-            boolean loadDefaultRapidCalcConf = ResolveErrorQuestionLevel.instance().initializeMeta();
-            if(!loadDefaultRapidCalcConf){
-                LoggerHelper.error("load default rapid calculate configure failed!");
-                break;
-            }
-
-            boolean loadDefaultSystemPaper = DefaultSystemPaper.instance().initializeMeta();
-            if(!loadDefaultSystemPaper){
-                LoggerHelper.error("load default system paper failed!");
-                break;
-            }
-
             //3.启动Http Server
-            HttpServer server = new HttpServer(ConfigUtils.instance().getHttpServicePort(),
-                    ConfigUtils.instance().getHttpServiceIoCount(),
-                    ConfigUtils.instance().getHttpServiceWorkerCount(),
-                    ConfigUtils.instance().getHttpServiceTcpBacklog(),
-                    ConfigUtils.instance().getHttpServiceTcpLinger(),
-                    ConfigUtils.instance().getHttpServiceTcpKeepAlive(),
-                    ConfigUtils.instance().getHttpServiceTcpReuseAddress());
+            HttpServer server = new HttpServer(GlobalConfig.instance().getHttpServicePort(),
+                    GlobalConfig.instance().getHttpServiceIoCount(),
+                    GlobalConfig.instance().getHttpServiceWorkerCount(),
+                    GlobalConfig.instance().getHttpServiceTcpBacklog(),
+                    GlobalConfig.instance().getHttpServiceTcpLinger(),
+                    GlobalConfig.instance().getHttpServiceTcpKeepAlive(),
+                    GlobalConfig.instance().getHttpServiceTcpReuseAddress());
             boolean startSuccess =server.start();
             if (!startSuccess) {
                 LoggerHelper.error("server start failed!");
                 break;
             }
 
-            LoggerHelper.info("server started on listen port " + ConfigUtils.instance().getHttpServicePort());
+            LoggerHelper.info("server started on listen port " + GlobalConfig.instance().getHttpServicePort());
 
         }while (false);
 

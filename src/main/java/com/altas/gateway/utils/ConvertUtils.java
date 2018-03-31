@@ -1,10 +1,10 @@
 package com.altas.gateway.utils;
 
-import com.alr.core.utils.JsonHelper;
-
 import java.math.BigDecimal;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by zhangy on 2017/7/7.
@@ -58,30 +58,11 @@ public class ConvertUtils {
                 Date date = DateFormat.getInstance().parse(string);
                 return date;
             }  else {
-                return JsonHelper.valueOf(string, type);
+
             }
         }catch (Exception ex){
-            return  null;
         }
-    }
-
-    /**
-     * 将mapList组成的Json字符串转换成字符串
-     * @param mapListJsonStr
-     * @return List<Map<String,Object>>
-     */
-    public static List<Map<String,Object>> convertMapListJsonStrToList(String mapListJsonStr){
-        if(null==mapListJsonStr||mapListJsonStr.isEmpty()){
-            return null;
-        }
-        List<Object> list= JsonHelper.valueOfList(mapListJsonStr,Object.class);
-        Map<String,Object> map ;
-        List<Map<String,Object>> retMapList = new ArrayList<>();
-        for(Object object : list){
-            map= (Map<String, Object>) object;
-            retMapList.add(map);
-        }
-        return retMapList;
+        return null;
     }
 
     public static String convertList(List<String> list, String splitChar){

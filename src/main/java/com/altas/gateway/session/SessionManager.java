@@ -1,24 +1,18 @@
 package com.altas.gateway.session;
 
 import com.altas.cache.redis.JedisTemplate;
-import com.alr.core.utils.SerializeHelper;
-import com.altas.gateway.constant.CONST;
+import com.altas.gateway.utils.SerializeHelper;
 
 import java.util.UUID;
 
-/**
- * Created by G_dragon on 2017/7/12.
- *
- */
 public class SessionManager {
 
     public static SessionManager instance() {
         return new SessionManager();
     }
 
-    //主session库
+
     private final String sessionPrefix = "session";
-    //session的登陆状态库  用于判断每个session的登陆状态
     private final String loginPrefix = "loginState";
 
     /**
@@ -54,7 +48,7 @@ public class SessionManager {
     public boolean refreshSession(Session session) {
         JedisTemplate.instance().set(sessionPrefix, session.getSessionId(), SerializeHelper.serialize(session));
 
-        if (session.getSessionState() == SessionState.LOGIN && session.getRole() == CONST.LOGIN_ROLE_NORMAL) {
+        if (session.getSessionState() == SessionState.LOGIN) {
             JedisTemplate.instance().set(loginPrefix, session.getUserName(), session.getSessionId());
         }
         return true;
@@ -87,11 +81,7 @@ public class SessionManager {
             if (loginSessionID.equals(session.getSessionId())) {
                 return SessionState.LOGIN;
             } else {
-                if (session.getRole() == CONST.LOGIN_ROLE_NORMAL) {
-                    return SessionState.LOGIN_AT_OTHER_PLACE;
-                } else {
-                    return SessionState.LOGIN;
-                }
+                return SessionState.LOGIN_AT_OTHER_PLACE;
             }
         }
     }

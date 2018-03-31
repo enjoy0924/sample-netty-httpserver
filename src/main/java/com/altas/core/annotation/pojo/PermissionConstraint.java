@@ -1,39 +1,28 @@
 package com.altas.core.annotation.pojo;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class PermissionConstraint {
 
-    /**
-     * 权限map,考虑到权限有多个共用作用的情况，使用map来装，key为权限注入的名称，value为权限对应的反射类
-     */
-    private Map<String,String> permissionMap;
-
-    /**
-     * 多个权限共同作用的分隔符（|或者&，其他暂不支持），比如alr:um:authz|alr:vip:game,表示这两个任一个权限满足即可
-     * 而alr:um:authz&alr:vip:game，表示这两个共同作用才会有效果
-     */
-    private String multiPermissionSeparator;
-
-
-    public Map<String, String> getPermissionMap() {
-        return permissionMap;
+    public List<String> getPermissions() {
+        return this.permissions;
     }
 
-    public void setPermissionMap(Map<String, String> permissionMap) {
-        this.permissionMap = permissionMap;
+    public void setPermissions(List<String> permissions) {
+        this.permissions = permissions;
     }
 
-    public String getMultiPermissionSeparator() {
-        return multiPermissionSeparator;
+    public void addPermission(String permission){
+        this.permissions.add(permission);
     }
 
-    public void setMultiPermissionSeparator(String multiPermissionSeparator) {
-        this.multiPermissionSeparator = multiPermissionSeparator;
+    private List<String> permissions = new ArrayList<>();
+
+    public void addPermissions(String permissions, String seprator) {
+        this.permissions.addAll(
+                Arrays.asList(permissions.split(seprator))
+        );
     }
-
-
-
-
-
 }

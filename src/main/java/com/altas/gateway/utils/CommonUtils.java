@@ -1,10 +1,10 @@
 package com.altas.gateway.utils;
 
-import com.alr.core.utils.DateTimeHelper;
 import org.apache.commons.lang3.StringUtils;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Author: syd

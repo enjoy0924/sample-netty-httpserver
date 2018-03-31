@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 @Target(ElementType.PARAMETER)
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-public @interface KvParam {
+public @interface FormParam {
     String value() default "";
     boolean required() default false;
 }

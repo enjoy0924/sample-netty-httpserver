@@ -1,17 +1,13 @@
 package com.altas.gateway.permission;
 
 import com.altas.core.annotation.pojo.PermissionConstraint;
-import com.altas.gateway.constant.CONST;
+import com.altas.gateway.loader.GlobalConfig;
 import com.altas.gateway.session.Session;
-import com.alr.gateway.tars.globalservants.GlobalServantsConst;
+import com.altas.gateway.tars.globalservants.GlobalServantsConst;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
+import java.util.List;
 
-/**
- * Created by Dengxl on 2017/7/14.
- */
+
 public class PermissionManage {
 
     private static final PermissionManage permissionManage = new PermissionManage();
@@ -29,36 +25,19 @@ public class PermissionManage {
      */
     public int hasPermission(PermissionConstraint permissionConstraint, Session session) {
 
-        Map<String, String> permissionMap = permissionConstraint.getPermissionMap();
-
-        if (null == permissionMap) {
+        List<String> permissions = permissionConstraint.getPermissions();
+        if (null == permissions) {
             return GlobalServantsConst.ERROR_CODE_OK;
         }
 
         int error = GlobalServantsConst.ERROR_CODE_OK;
         try {
-            for (Map.Entry<String, String> map : permissionMap.entrySet()) {
-                Class clazz = Class.forName(map.getValue());
-                Object instance = clazz.newInstance();
-                Method method = instance.getClass().getDeclaredMethod(CONST.PERMISSION_VALIDATE_METHOD_NAME, Session.class);
-                error = (int) method.invoke(instance, session);
-                if(null==permissionConstraint.getMultiPermissionSeparator()){
-                    //如果不是复合型的权限设定，直接就可以退出了
-                    break;
-                }
-                //如果权限是以“|”分割，只要当前遍历过程中有一个为true，就满足返回。
-                if (CONST.MULTI_PERMISSION_PEPARATOR_OR.equals(permissionConstraint.getMultiPermissionSeparator()) ) {
-                    if(error == GlobalServantsConst.ERROR_CODE_OK)
-                        break;
-                } else if (CONST.MULTI_PERMISSION_PEPARATOR_ADD.equals(permissionConstraint.getMultiPermissionSeparator())) {
-                    if(error != GlobalServantsConst.ERROR_CODE_OK)
-                        break;
-                } else {//表示map只有一个或者上面两种情况的最终结果
-                    break;
-                }
+            for (String permission : permissions) {
+                Permission permissionInvoke = GlobalConfig.instance().getPermissionInvokerByPermission(permission);
+                error = permissionInvoke.validatePermission(session);
             }
 
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException |InvocationTargetException e) {
+        } catch (Exception e) {
             error = GlobalServantsConst.ERROR_CODE_UNKNOWN;
         }
 

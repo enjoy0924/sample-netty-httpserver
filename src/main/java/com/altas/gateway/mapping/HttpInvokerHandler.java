@@ -1,20 +1,20 @@
 package com.altas.gateway.mapping;
 
-import com.alr.api.ResultDictionary;
 import com.altas.core.annotation.pojo.UrlInvoker;
 import com.altas.core.annotation.restful.enumeration.MimeType;
-import com.alr.core.utils.JsonHelper;
-import com.alr.core.utils.LoggerHelper;
 import com.altas.exception.UrlInvokerNotFoundException;
 import com.altas.gateway.constant.CONST;
 import com.altas.gateway.exception.ParamLackException;
 import com.altas.gateway.loader.HttpRequestHandlerLoader;
 import com.altas.gateway.permission.PermissionManage;
+import com.altas.gateway.schema.ApiResponse;
 import com.altas.gateway.session.Session;
 import com.altas.gateway.session.SessionManager;
 import com.altas.gateway.session.SessionState;
-import com.alr.gateway.tars.globalservants.GlobalServantsConst;
+import com.altas.gateway.tars.globalservants.GlobalServantsConst;
 import com.altas.gateway.utils.HttpUtils;
+import com.altas.gateway.utils.JsonHelper;
+import com.altas.gateway.utils.LoggerHelper;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.*;
 import io.netty.util.AsciiString;
@@ -24,10 +24,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-/**
- * Created by zhangy on 2017/7/6.
- *
- */
 public class HttpInvokerHandler {
 
     private static final String cookieFormatString = (HttpUtils.HTTP_SESSION_KEY+"=%s;Path=/door/;HttpOnly");
@@ -55,7 +51,7 @@ public class HttpInvokerHandler {
             if (error == GlobalServantsConst.ERROR_CODE_OK) {//有权限就执行方法
                 result = executeByHttpRequest(invoker, fullHttpRequest, session);
             } else {
-                result = new ResultDictionary(error);
+                result = new ApiResponse(error);
                 if(error == GlobalServantsConst.ERROR_CODE_USER_LOGIN_IN_OTHER_PLACE){
                     if(null != session) //清除当前的session
                         clearCurrSessionBySessionId(session.getSessionId());
@@ -124,10 +120,10 @@ public class HttpInvokerHandler {
 
             /**从Session里面取出部分参数放入这里面*/
             if(null != session) {
-                queryParamDict.put(CONST.KEY_SESSION, session.getSessionId());
+//                queryParamDict.put(CONST.KEY_SESSION, session.getSessionId());
                 String userId = session.getUserId();
                 if (null != userId && !userId.trim().isEmpty()) {
-                    queryParamDict.put(CONST.KEY_USER_ID, userId);
+                    queryParamDict.put(CONST.SYS_AUTO_INJECT_PARAM_KEY_USER_ID, userId);
                 }
             }
 
@@ -138,10 +134,10 @@ public class HttpInvokerHandler {
             return invoker.getMethod().invoke(invoker.getObject(), params);
         }catch (UnsupportedEncodingException e){
             LoggerHelper.error(e.getMessage(), e);
-            return new ResultDictionary(GlobalServantsConst.ERROR_CODE_UNKNOWN);
+            return new ApiResponse(GlobalServantsConst.ERROR_CODE_UNKNOWN);
         } catch (InvocationTargetException | IllegalAccessException e) {
             LoggerHelper.error(e.getMessage(), e);
-            return new ResultDictionary(GlobalServantsConst.ERROR_CODE_UNKNOWN);
+            return new ApiResponse(GlobalServantsConst.ERROR_CODE_UNKNOWN);
         }
     }
 

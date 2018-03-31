@@ -11,14 +11,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.Random;
 
-/**
- * <p>
- * Created by JianjunTang
- * <p>
- * Date: 2015/4/20
- * <p>
- * Time: 14:24
- */
 public class RandomValidateCode {
     private Random random = new Random();
 
@@ -88,7 +80,7 @@ public class RandomValidateCode {
         }
 
         /**将验证码放入session中*/
-        session.addAttribute(CONST.KEY_IMG_VALIDATE_CODE, randomString);
+        session.addAttribute(CONST.SESSION_ATTR_KEY_IMG_VALIDATE_CODE, randomString);
         SessionManager.instance().refreshSession(session);
         g.dispose();
         try {

@@ -2,11 +2,8 @@ package com.altas.gateway.permission;
 
 import com.altas.gateway.session.Session;
 import com.altas.gateway.session.SessionState;
-import com.alr.gateway.tars.globalservants.GlobalServantsConst;
+import com.altas.gateway.tars.globalservants.GlobalServantsConst;
 
-/**
- * Created by zhangy on 2017/7/13.
- */
 public class AuthzPermissionImpl implements Permission {
     @Override
     public int validatePermission(Session session) {

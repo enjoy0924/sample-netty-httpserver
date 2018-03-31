@@ -26,9 +26,17 @@
     <apache-commons-lang3.version>3.6</apache-commons-lang3.version>
     <rocketmq.version>4.1.0-incubating</rocketmq.version>
     <commons.collection.version>3.2.2</commons.collection.version>
+    <swagger.version>2.0.0-rc4</swagger.version>
   </properties>
 
   <dependencies>
+
+    <!-- https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-core -->
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-core</artifactId>
+      <version>${swagger.version}</version>
+    </dependency>
 
 
     <dependency>
@@ -262,38 +270,13 @@
           <tars2JavaConfig>
             <tarsFiles>
               <tarsFile>${basedir}/src/main/resources/um.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/loc.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/gm.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/lifeRecord.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/rc.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/shard.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/pqb.tars</tarsFile>
               <tarsFile>${basedir}/src/main/resources/global.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/gameQuestion.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/gameCatalog.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/game.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/qbu.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/qus.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/rqb.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/fb.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/mall.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/credits.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/task.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/appr_comment.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/conf.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/RCQuestion.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/ms.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/pet.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/petCatalog.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/teaching_research.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/activity.tars</tarsFile>
-              <tarsFile>${basedir}/src/main/resources/handWritingNodeJS.tars</tarsFile>
             </tarsFiles>
             <tarsFileCharset>UTF-8</tarsFileCharset>
             <servant>false</servant>
             <srcPath>${basedir}/src/main/java</srcPath>
             <charset>UTF-8</charset>
-            <packagePrefixName>com.alr.gateway.tars.</packagePrefixName>
+            <packagePrefixName>com.altas.gateway.tars.</packagePrefixName>
           </tars2JavaConfig>
         </configuration>
       </plugin>

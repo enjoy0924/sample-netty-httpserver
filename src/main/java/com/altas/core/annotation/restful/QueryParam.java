@@ -2,11 +2,10 @@ package com.altas.core.annotation.restful;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target(ElementType.PARAMETER)
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Url {
+public @interface QueryParam {
     String value() default "";
-    String summary() default "";
-    String description() default "";
+    boolean required() default false;
 }

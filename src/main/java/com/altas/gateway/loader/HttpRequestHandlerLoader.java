@@ -2,16 +2,13 @@ package com.altas.gateway.loader;
 
 import com.altas.core.annotation.ReflectHelper;
 import com.altas.core.annotation.UrlHelper;
-import com.alr.core.annotation.pojo.*;
-import com.alr.core.annotation.restful.*;
-import com.alr.core.utils.LoggerHelper;
 import com.altas.core.annotation.pojo.*;
+import com.altas.core.annotation.restful.*;
 import com.altas.exception.UnknownUrlException;
 import com.altas.exception.UrlInvokerNotFoundException;
-import com.altas.gateway.constant.CONST;
 import com.altas.gateway.exception.UnsupportedMethodException;
 import com.altas.gateway.exception.UrlRepeatException;
-import com.altas.core.annotation.restful.*;
+import com.altas.gateway.utils.LoggerHelper;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -171,42 +168,12 @@ public class HttpRequestHandlerLoader {
 
         Permission permission = method.getAnnotation(Permission.class);
         if (null != permission) {
-            Map<String, String> allPermissionMap = ConfigUtils.instance().getAllPermissionMap();
             String permissionValue = permission.value();
-            Map<String, String> permissionMap;
-            if (null == permissionValue) {
-                permissionConstraint.setPermissionMap(null);
-            } else {
-                if (permissionValue.contains(CONST.MULTI_PERMISSION_PEPARATOR_ADD)) {
-                    permissionMap = formatPermissionValueToMap(permissionValue, CONST.MULTI_PERMISSION_PEPARATOR_ADD, allPermissionMap);
-                    permissionConstraint.setMultiPermissionSeparator(CONST.MULTI_PERMISSION_PEPARATOR_ADD);
-                } else {
-                    permissionMap = formatPermissionValueToMap(permissionValue, CONST.MULTI_PERMISSION_PEPARATOR_OR, allPermissionMap);
-                    permissionConstraint.setMultiPermissionSeparator(CONST.MULTI_PERMISSION_PEPARATOR_OR);
-                }
-                permissionConstraint.setPermissionMap(permissionMap);
+            if (null != permissionValue) {
+                permissionConstraint.addPermissions(permissionValue,";");
             }
         }
         return permissionConstraint;
-    }
-
-
-    private Map<String, String> formatPermissionValueToMap(String permissionValue, String multiPermissionSeparator, Map<String, String> allPermissionMap) {
-        Map<String, String> permissionMap = new ConcurrentHashMap<>();
-        if (permissionValue.contains(multiPermissionSeparator)) {
-            //由于java不支持“|”竖线分割，需要转义一下
-            String newSeparator = multiPermissionSeparator.equals(CONST.MULTI_PERMISSION_PEPARATOR_OR) ? "\\|" : multiPermissionSeparator;
-            String[] permissionKeyList = permissionValue.split(newSeparator);
-            for (String permissionKey : permissionKeyList) {
-                if (null != allPermissionMap.get(permissionKey)) {
-                    permissionMap.put(permissionKey, allPermissionMap.get(permissionKey));
-                }
-            }
-        } else {
-            if (null != allPermissionMap.get(permissionValue))
-                permissionMap.put(permissionValue, allPermissionMap.get(permissionValue));
-        }
-        return permissionMap;
     }
 
     /**
@@ -223,11 +190,11 @@ public class HttpRequestHandlerLoader {
             param.setIndex(i);
 
             do {
-                KvParam kvParam = parameters[i].getAnnotation(KvParam.class);
-                if (null != kvParam) {
-                    param.setParamName(kvParam.value());
+                FormParam formParam = parameters[i].getAnnotation(FormParam.class);
+                if (null != formParam) {
+                    param.setParamName(formParam.value());
                     param.setParamType(AnnotationParam.PARAM_TYPE_QUERY);
-                    param.getConstraint().setRequired(kvParam.required());
+                    param.getConstraint().setRequired(formParam.required());
                     break;
                 }
 
