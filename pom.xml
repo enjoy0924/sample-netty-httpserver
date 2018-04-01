@@ -19,12 +19,9 @@
     <netty.version>4.1.12.Final</netty.version>
     <build.plugins.plugin.version>2.6</build.plugins.plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <alr-utils.version>1.0.3</alr-utils.version>
     <slf4j.version>1.7.5</slf4j.version>
     <jedis.version>2.9.0</jedis.version>
-    <pinyin4j.version>2.5.0</pinyin4j.version>
     <apache-commons-lang3.version>3.6</apache-commons-lang3.version>
-    <rocketmq.version>4.1.0-incubating</rocketmq.version>
     <commons.collection.version>3.2.2</commons.collection.version>
     <swagger.version>2.0.0-rc4</swagger.version>
   </properties>
@@ -37,14 +34,6 @@
       <artifactId>swagger-core</artifactId>
       <version>${swagger.version}</version>
     </dependency>
-
-
-    <dependency>
-      <groupId>com.allere.grade</groupId>
-      <artifactId>allere-grade</artifactId>
-      <version>2.9.18</version>
-    </dependency>
-
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -62,49 +51,15 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.rocketmq</groupId>
-      <artifactId>rocketmq-client</artifactId>
-      <version>${rocketmq.version}</version>
-    </dependency>
-   <!-- <dependency>
-      <groupId>org.apache.rocketmq</groupId>
-      <artifactId>rocketmq-namesrv</artifactId>
-      <version>${rocketmq.version}</version>
-    </dependency>-->
-   <!-- <dependency>
-      <groupId>org.apache.rocketmq</groupId>
-      <artifactId>rocketmq-store</artifactId>
-      <version>${rocketmq.version}</version>
-    </dependency>-->
-    <!--<dependency>-->
-      <!--<groupId>org.apache.rocketmq</groupId>-->
-      <!--<artifactId>rocketmq-srvutil</artifactId>-->
-      <!--<version>${rocketmq.version}</version>-->
-    <!--</dependency>-->
-    <dependency>
-      <groupId>org.apache.rocketmq</groupId>
-      <artifactId>rocketmq-common</artifactId>
-      <version>${rocketmq.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
       <version>${commons.collection.version}</version>
     </dependency>
 
-
-
     <dependency>
       <groupId>qq-cloud-central</groupId>
       <artifactId>tars-client</artifactId>
       <version>${project.parent.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.allere.core</groupId>
-      <artifactId>alr-utils</artifactId>
-      <version>${alr-utils.version}</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
@@ -142,12 +97,6 @@
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
       <version>${jedis.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.belerweb</groupId>
-      <artifactId>pinyin4j</artifactId>
-      <version>${pinyin4j.version}</version>
     </dependency>
 
   </dependencies>

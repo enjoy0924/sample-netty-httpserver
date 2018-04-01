@@ -1,15 +1,12 @@
 package com.altas.gateway.schema;
 
-import com.altas.core.annotation.restful.Schema;
-
-@Schema
-public class ApiResponse {
+public class Response<T> {
 
     private int code;
     private String message;
-    private Object payload;
+    private T payload;
 
-    public ApiResponse(int error) {
+    public Response(int error) {
         this.code = error;
     }
 
@@ -29,11 +26,11 @@ public class ApiResponse {
         this.message = message;
     }
 
-    public Object getPayload() {
+    public T getPayload() {
         return payload;
     }
 
-    public void setPayload(Object payload) {
+    public void setPayload(T payload) {
         this.payload = payload;
     }
 }

@@ -9,5 +9,8 @@ import java.lang.annotation.*;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PathParam {
+    String type() default "string";
+    String format() default "string";
     String value() default "";
+    boolean required() default false;
 }

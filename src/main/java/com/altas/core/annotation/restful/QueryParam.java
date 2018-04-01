@@ -6,6 +6,8 @@ import java.lang.annotation.*;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 public @interface QueryParam {
+    String type() default "string";
+    String format() default "string";
     String value() default "";
     boolean required() default false;
 }

@@ -10,6 +10,8 @@ import java.lang.annotation.*;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HeaderParam {
+    String type() default "string";
+    String format() default "string";
     String value() default "";
     boolean required() default false;
 }

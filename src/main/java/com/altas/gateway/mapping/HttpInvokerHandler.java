@@ -7,7 +7,7 @@ import com.altas.gateway.constant.CONST;
 import com.altas.gateway.exception.ParamLackException;
 import com.altas.gateway.loader.HttpRequestHandlerLoader;
 import com.altas.gateway.permission.PermissionManage;
-import com.altas.gateway.schema.ApiResponse;
+import com.altas.gateway.schema.Response;
 import com.altas.gateway.session.Session;
 import com.altas.gateway.session.SessionManager;
 import com.altas.gateway.session.SessionState;
@@ -51,7 +51,7 @@ public class HttpInvokerHandler {
             if (error == GlobalServantsConst.ERROR_CODE_OK) {//有权限就执行方法
                 result = executeByHttpRequest(invoker, fullHttpRequest, session);
             } else {
-                result = new ApiResponse(error);
+                result = new Response(error);
                 if(error == GlobalServantsConst.ERROR_CODE_USER_LOGIN_IN_OTHER_PLACE){
                     if(null != session) //清除当前的session
                         clearCurrSessionBySessionId(session.getSessionId());
@@ -134,10 +134,10 @@ public class HttpInvokerHandler {
             return invoker.getMethod().invoke(invoker.getObject(), params);
         }catch (UnsupportedEncodingException e){
             LoggerHelper.error(e.getMessage(), e);
-            return new ApiResponse(GlobalServantsConst.ERROR_CODE_UNKNOWN);
+            return new Response(GlobalServantsConst.ERROR_CODE_UNKNOWN);
         } catch (InvocationTargetException | IllegalAccessException e) {
             LoggerHelper.error(e.getMessage(), e);
-            return new ApiResponse(GlobalServantsConst.ERROR_CODE_UNKNOWN);
+            return new Response(GlobalServantsConst.ERROR_CODE_UNKNOWN);
         }
     }
 

@@ -3,18 +3,14 @@ package com.altas.swagger;
 import com.altas.core.annotation.ReflectHelper;
 import com.altas.core.annotation.UrlHelper;
 import com.altas.core.annotation.pojo.AnnotationParam;
-import com.altas.core.annotation.pojo.ConsumeConstraint;
-import com.altas.core.annotation.pojo.PermissionConstraint;
-import com.altas.core.annotation.pojo.ProduceConstraint;
 import com.altas.core.annotation.restful.*;
 import com.altas.core.annotation.restful.enumeration.HttpMethod;
 import com.altas.gateway.exception.UrlRepeatException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.core.util.Json;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.models.*;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.Content;
@@ -26,10 +22,13 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OpenApiDocTools {
 
@@ -38,6 +37,8 @@ public class OpenApiDocTools {
         List<String> apiBasePackages = new ArrayList<>();
         apiBasePackages.add("com.altas.api");
 
+        List<String> extendPackages = new ArrayList<>();
+        extendPackages.add("com.altas.gateway.schema");
         try {
 
             OpenApiDocTools.loadServer();
@@ -45,6 +46,8 @@ public class OpenApiDocTools {
             OpenApiDocTools.loadInfo();
 
             OpenApiDocTools.loadAnnotation(apiBasePackages);
+
+            OpenApiDocTools.loadExtendAnnotation(extendPackages);
 
             OpenApiDocTools.jsonDocument();
         } catch (IllegalAccessException e) {
@@ -55,6 +58,49 @@ public class OpenApiDocTools {
             e.printStackTrace();
         }
 
+    }
+
+    private static void loadExtendAnnotation(List<String> extendPackages) {
+        List<Class<?>> classesInPackages = new ArrayList<>();
+
+        //获取设置的包里面的所有的类类型
+        for (String packageName : extendPackages) {
+            classesInPackages.addAll(ReflectHelper.getClassesWithPackageName(packageName));
+
+        }
+
+        Components components = new Components();
+        for (Class<?> classItem : classesInPackages) {
+            Annotation[] annotations = classItem.getAnnotations();
+            if(null == annotations || annotations.length==0)
+                continue;
+            for(Annotation annotation : annotations){
+                if(annotation instanceof io.swagger.v3.oas.annotations.media.Schema){
+
+                    Schema schema = new Schema();
+                    schema.setType("object");
+
+                    Field[] fields = classItem.getDeclaredFields();
+                    Map<String, Schema> properties = new HashMap<>();
+                    for(Field field : fields){
+                        String name = field.getName();
+                        String type = field.getType().getTypeName();
+
+                        Schema property = new Schema();
+                        property.setType(getParamType(type));
+                        property.setFormat(getParamType(type));
+
+                        properties.put(name, property);
+
+                    }
+                    schema.setProperties(properties);
+                    String typeName = classItem.getTypeName();
+                    String[] type = typeName.split("\\.");
+                    components.addSchemas(type[type.length-1] , schema);
+                }
+            }
+        }
+        openAPI.components(components);
     }
 
     private static OpenAPI openAPI = new OpenAPI();
@@ -96,7 +142,7 @@ public class OpenApiDocTools {
     public static void loadServer(){
 
         Server server = new Server();
-        server.setUrl("www.xuexihappy.com");
+        server.setUrl("www.altas.com");
 
         openAPI.addServersItem(server);
     }
@@ -162,28 +208,73 @@ public class OpenApiDocTools {
         List<String> classUrls;
         List<String> methodUrls;
         for (Method method : methods) {
-            Url methodUrl = method.getAnnotation(Url.class);
-            if(null == methodUrl)
+
+            Url urlAnnotation = method.getAnnotation(Url.class);
+            if(null == urlAnnotation)
                 continue;
 
             Deprecated deprecated = method.getAnnotation(Deprecated.class);
             String methodName = method.getName();
+
+            List<QueryParam> queryParamAnnotations = new ArrayList<>();
+            List<PathParam> pathParamAnnotations = new ArrayList<>();
+            List<HeaderParam> headerParamAnnotations = new ArrayList<>();
+            List<FormParam> formParamAnnotations = new ArrayList<>();
+            Annotation[][] annotationArray = method.getParameterAnnotations();
+            for(Annotation[] annotations: annotationArray){
+                for(Annotation annotation : annotations){
+                    if(annotation instanceof  QueryParam){
+                        queryParamAnnotations.add((QueryParam) annotation);
+                    }else if(annotation instanceof PathParam){
+                        pathParamAnnotations.add((PathParam) annotation);
+                    }else if(annotation instanceof HeaderParam){
+                        headerParamAnnotations.add((HeaderParam) annotation);
+                    }else if(annotation instanceof FormParam){
+                        formParamAnnotations.add((FormParam) annotation);
+                    }
+                }
+            }
+
+            List<io.swagger.v3.oas.models.parameters.Parameter> parameters = getParametersByAnnotation(queryParamAnnotations, pathParamAnnotations, headerParamAnnotations);
+
+            RequestBody requestBody = getRequestBodyByAnnotation(method.getAnnotation(Consumer.class), formParamAnnotations);
+            ApiResponses apiResponses = getResponseByAnnotation(method.getAnnotation(io.swagger.v3.oas.annotations.responses.ApiResponses.class), method.getAnnotation(Producer.class));
+            List<SecurityRequirement> securityRequirements = getSecurityByAnnotation(method.getAnnotation(Permission.class));
+
             boolean isDeprecated = (null!=deprecated);
-            if (methodUrl != null) {
-                String description = methodUrl.description();
+            if (urlAnnotation != null) {
+                String description = urlAnnotation.description();
                 classUrls = UrlHelper.matcherUrlToStringList(baseUrl);
                 for (String classUrl : classUrls) {
-                    methodUrls = UrlHelper.matcherUrlToStringList(UrlHelper.regularUrl(methodUrl.value()));
+                    methodUrls = UrlHelper.matcherUrlToStringList(UrlHelper.regularUrl(urlAnnotation.value()));
                     for (String mUrl : methodUrls) {
                         //使用类的url组合方法的url构成完整的url
                         String path = classUrl + mUrl;
 
-                        PermissionConstraint permissionConstraint = scanPermissionWithMethod(method);
-                        ConsumeConstraint consumeConstraint       = scanConsumerWithMethod(method);
-                        ProduceConstraint produceConstraint       = scanProducerWithMethod(method);
-                        List<AnnotationParam> annotationParams    = scanQueryParamsWithMethod(method);
+                        PathItem pathItem = new PathItem();
+                        pathItem.setSummary(urlAnnotation.summary());
+                        pathItem.description(description);
 
-                        addPath(tag, description, path, methodName, isDeprecated, permissionConstraint, consumeConstraint, produceConstraint, annotationParams);
+                        PathItem.HttpMethod httpMethod = getHttpMethodByAnnotation(method.getAnnotation(Consumer.class));
+                        Operation operation = new Operation();
+                        operation.deprecated(isDeprecated);
+                        operation.addTagsItem(tag);
+                        operation.setSecurity(securityRequirements);
+                        operation.setResponses(apiResponses);
+                        operation.setOperationId(methodName);
+                        if(null != parameters && !parameters.isEmpty())
+                            operation.setParameters(parameters);
+                        operation.setRequestBody(requestBody);
+
+                        pathItem.operation(httpMethod, operation);
+
+                        Paths paths = openAPI.getPaths();
+                        if(null == paths){
+                            paths = new Paths();
+                            openAPI.setPaths(paths);
+                        }
+
+                        paths.addPathItem(path, pathItem);
                     }
                 }
 
@@ -193,96 +284,121 @@ public class OpenApiDocTools {
         return true;
     }
 
-    private static void addPath(String tag, String summary, String path, String operationId, boolean isDeprecated, PermissionConstraint permissionConstraint, ConsumeConstraint consumeConstraint, ProduceConstraint produceConstraint, List<AnnotationParam> annotationParams) {
+    private static List<io.swagger.v3.oas.models.parameters.Parameter> getParametersByAnnotation(List<QueryParam> queryParamAnnotations, List<PathParam> pathParamAnnotations, List<HeaderParam> headerParamAnnotations) {
+        List<io.swagger.v3.oas.models.parameters.Parameter> parameters = new ArrayList<>();
+        for(PathParam pathParamAnnotation : pathParamAnnotations){
+            io.swagger.v3.oas.models.parameters.Parameter parameter = new io.swagger.v3.oas.models.parameters.Parameter();
+            parameter.setRequired(pathParamAnnotation.required());
+            parameter.setName(pathParamAnnotation.value());
+            parameter.setIn(ParameterIn.PATH.name().toLowerCase());
 
-        PathItem pathItem = new PathItem();
-        pathItem.setSummary(summary);
-        pathItem.description(summary);
+            Schema schema = new Schema();
+            schema.setType(pathParamAnnotation.type());
+            schema.setFormat(pathParamAnnotation.format());
 
-        PathItem.HttpMethod httpMethod = getHttpMethod(consumeConstraint);
-        Operation operation = new Operation();
-        operation.deprecated(isDeprecated);
-        operation.addTagsItem(tag);
-        operation.setSecurity(getSecurity(permissionConstraint));
-        operation.setResponses(getResponse(produceConstraint));
-        operation.setOperationId(operationId);
-//        operation.setParameters(getParameters(annotationParams));
+            parameter.setSchema(schema);
 
-        operation.setRequestBody(getRequestBody(annotationParams, consumeConstraint));
-
-        pathItem.operation(httpMethod, operation);
-
-        Paths paths = openAPI.getPaths();
-        if(null == paths){
-            paths = new Paths();
-            openAPI.setPaths(paths);
+            parameters.add(parameter);
         }
 
-        paths.addPathItem(path, pathItem);
+        for(HeaderParam headerParamAnnotation : headerParamAnnotations){
+            io.swagger.v3.oas.models.parameters.Parameter parameter = new io.swagger.v3.oas.models.parameters.Parameter();
+            parameter.setRequired(headerParamAnnotation.required());
+            parameter.setName(headerParamAnnotation.value());
+            parameter.setIn(ParameterIn.HEADER.name().toLowerCase());
 
+            Schema schema = new Schema();
+            schema.setType(headerParamAnnotation.type());
+            schema.setFormat(headerParamAnnotation.format());
+
+            parameter.setSchema(schema);
+
+            parameters.add(parameter);
+        }
+
+        for(QueryParam queryParamAnnotation : queryParamAnnotations){
+            io.swagger.v3.oas.models.parameters.Parameter parameter = new io.swagger.v3.oas.models.parameters.Parameter();
+            parameter.setRequired(queryParamAnnotation.required());
+            parameter.setName(queryParamAnnotation.value());
+            parameter.setIn(ParameterIn.QUERY.name().toLowerCase());
+
+            Schema schema = new Schema();
+            schema.setType(queryParamAnnotation.type());
+            schema.setFormat(queryParamAnnotation.format());
+
+            parameter.setSchema(schema);
+
+            parameters.add(parameter);
+        }
+
+        return parameters;
     }
 
-    private static ApiResponses getResponse(ProduceConstraint produceConstraint) {
+    private static ApiResponses getResponseByAnnotation(io.swagger.v3.oas.annotations.responses.ApiResponses apiResponsesAnnotation, Producer producer) {
+
         ApiResponses apiResponses = new ApiResponses();
+
+        ApiResponse[] apiResponseAnnotations = apiResponsesAnnotation.value();
+
+        for (ApiResponse apiResponseAnnotation : apiResponseAnnotations) {
+
+            String responseCode = apiResponseAnnotation.responseCode();
+            String description = apiResponseAnnotation.description();
+
+            io.swagger.v3.oas.models.responses.ApiResponse apiResponse = new io.swagger.v3.oas.models.responses.ApiResponse();
+            apiResponse.description(description);
+
+
+            io.swagger.v3.oas.annotations.media.Content[] contentAnnotations = apiResponseAnnotation.content();
+            if (contentAnnotations.length > 0) {
+                for (io.swagger.v3.oas.annotations.media.Content contentAnnotation : contentAnnotations) {
+                    Content content = new Content();
+
+                    Schema schemaDict = getCommonSchemaDict();
+
+                    Schema schema = new Schema();
+                    io.swagger.v3.oas.annotations.media.Schema schemaAnnotation = contentAnnotation.schema();
+                    schema.set$ref(schemaAnnotation.ref());
+                    schema.setDescription(schemaAnnotation.description());
+                    schemaDict.addProperties("payload", schema);
+
+                    MediaType mediaType = new MediaType();
+                    mediaType.setSchema(schemaDict);
+                    content.addMediaType(producer.type().getType(), mediaType);
+
+                    //设置@Examples
+//                    mediaType.setExamples();
+
+                    apiResponse.setContent(content);
+                }
+            } else {
+                MediaType mediaType = new MediaType();
+                mediaType.setSchema(getCommonSchemaDict());
+                Content content = new Content();
+                content.addMediaType(producer.type().getType(), mediaType);
+
+                apiResponse.setContent(content);
+            }
+
+            apiResponses.addApiResponse(responseCode, apiResponse);
+        }
 
         return apiResponses;
     }
 
-    private static List<SecurityRequirement> getSecurity(PermissionConstraint permissionConstraint) {
+    private static List<SecurityRequirement> getSecurityByAnnotation(Permission permissionAnnotaion) {
 
         List<SecurityRequirement> securityRequirements = new ArrayList<>();
 
         SecurityRequirement securityRequirement = new SecurityRequirement();
-        securityRequirement.addList("permission",permissionConstraint.getPermissions());
+
+        String permissionVal = permissionAnnotaion.value();
+        String[] permissions = permissionVal.split(";");
+        for(String permission : permissions) {
+            securityRequirement.addList(permission);
+        }
 
         return securityRequirements;
-    }
-
-    private static RequestBody getRequestBody(List<AnnotationParam> annotationParams, ConsumeConstraint consumeConstraint) {
-
-        RequestBody requestBody = new RequestBody();
-
-        Content content = new Content();
-        MediaType mediaType = new MediaType();
-
-        Schema schema = new Schema();
-        schema.setType("object");
-        List<String> requiredItem = new ArrayList<>();
-        for(AnnotationParam annotationParam : annotationParams) {
-            Schema property = new Schema();
-            int paramIn = annotationParam.getParamType();
-            if(paramIn == AnnotationParam.PARAM_TYPE_BODY){
-                continue;
-            }
-
-            String type = getParamType(annotationParam.getType().getTypeName());
-            if(null != type) {
-                property.setType(type);
-            }
-            String format = getFormatByType(annotationParam.getType().getTypeName());
-            if(null != format) {
-                property.setFormat(format);
-            }
-
-            String paramName = annotationParam.getParamName();
-            if(null != paramName) {
-                property.setReadOnly(true);
-                if(annotationParam.getConstraint().required()){
-                    requiredItem.add(annotationParam.getParamName());
-                }
-                schema.addProperties(annotationParam.getParamName(), property);
-            }
-        }
-        schema.required(requiredItem);
-        mediaType.setSchema(schema);
-        content.addMediaType(consumeConstraint.getMimeType().getType(), mediaType);
-
-        //TODO 设置参数的例子
-        mediaType.getExamples();
-
-        requestBody.setContent(content);
-
-        return requestBody;
     }
 
     private static String getFormatByType(String type) {
@@ -299,7 +415,7 @@ public class OpenApiDocTools {
             return "date";
         }
 
-        return null;
+        return "object";
     }
 
     /**
@@ -333,7 +449,7 @@ public class OpenApiDocTools {
             return "string";
         }
 
-        return null;
+        return "object";
     }
 
 
@@ -355,9 +471,9 @@ public class OpenApiDocTools {
         return parameters;
     }
 
-    private static PathItem.HttpMethod getHttpMethod(ConsumeConstraint consumeConstraint) {
+    private static PathItem.HttpMethod getHttpMethodByAnnotation(Consumer consumer) {
 
-        HttpMethod httpMethod = consumeConstraint.getMethod();
+        HttpMethod httpMethod = consumer.method();
         if(httpMethod == HttpMethod.POST) {
             return PathItem.HttpMethod.POST;
         } else if(httpMethod == HttpMethod.GET){
@@ -371,90 +487,46 @@ public class OpenApiDocTools {
         }
     }
 
-    private static ProduceConstraint scanProducerWithMethod(Method method) {
+    private static RequestBody getRequestBodyByAnnotation(Consumer consumer, List<FormParam> formParamAnnotations) {
 
-        ProduceConstraint produceConstraint = new ProduceConstraint();
+        RequestBody requestBody = new RequestBody();
 
-        Producer producer = method.getAnnotation(Producer.class);
-        if (null != producer) {
-            produceConstraint.setMimeType(producer.type());
-        }
+        Content content = new Content();
+        MediaType mediaType = new MediaType();
 
-        return produceConstraint;
-    }
+        Schema schema = new Schema();
+        schema.setType("object");
+        List<String> requiredItem = new ArrayList<>();
+        for(FormParam formParam : formParamAnnotations) {
+            Schema property = new Schema();
+            property.setType(formParam.type());
 
-    private static ConsumeConstraint scanConsumerWithMethod(Method method) {
+            String format = formParam.format();
+            if(!format.trim().isEmpty()) {
+                property.setFormat(format);
+            }
 
-        ConsumeConstraint consumeConstraint = new ConsumeConstraint();
-
-        Consumer consumer = method.getAnnotation(Consumer.class);
-        if (null != consumer) {
-            consumeConstraint.setMethod(consumer.method());
-            consumeConstraint.setMimeType(consumer.type());
-        }
-
-        return consumeConstraint;
-    }
-
-    private static PermissionConstraint scanPermissionWithMethod(Method method) {
-
-        PermissionConstraint permissionConstraint = new PermissionConstraint();
-
-        Permission permission = method.getAnnotation(Permission.class);
-        if (null != permission) {
-            String permissionValue = permission.value();
-            if (null != permissionValue) {
-                permissionConstraint.addPermissions(permissionValue,";");
+            String paramName = formParam.value();
+            if(null != paramName) {
+                property.setReadOnly(true);
+                if(formParam.required()){
+                    requiredItem.add(paramName);
+                }
+                schema.addProperties(paramName, property);
             }
         }
-        return permissionConstraint;
+        schema.required(requiredItem);
+        mediaType.setSchema(schema);
+        content.addMediaType(consumer.type().getType(), mediaType);
+
+        //TODO 设置参数的例子
+        mediaType.getExamples();
+
+        requestBody.setContent(content);
+
+        return requestBody;
     }
 
-    private static List<AnnotationParam> scanQueryParamsWithMethod(Method method) {
-        List<AnnotationParam> paramList = new ArrayList<>();
-        Parameter[] parameters = method.getParameters();
-        for (int i = 0; i < parameters.length; i++) {
-            AnnotationParam param = new AnnotationParam();
-            param.setIndex(i);
-
-            do {
-                FormParam formParam = parameters[i].getAnnotation(FormParam.class);
-                if (null != formParam) {
-                    param.setParamName(formParam.value());
-                    param.setParamType(AnnotationParam.PARAM_TYPE_QUERY);
-                    param.getConstraint().setRequired(formParam.required());
-                    break;
-                }
-
-                HeaderParam headerParam = parameters[i].getAnnotation(HeaderParam.class);
-                if (null != headerParam) {
-                    param.setParamName(headerParam.value());
-                    param.setParamType(AnnotationParam.PARAM_TYPE_HEADER);
-                    param.getConstraint().setRequired(headerParam.required());
-                    break;
-                }
-
-
-                PathParam pathParam = parameters[i].getAnnotation(PathParam.class);
-                if (null != pathParam) {
-                    param.setParamName(pathParam.value());
-                    param.setParamType(AnnotationParam.PARAM_TYPE_PATH);
-                    break;
-                }
-
-
-                BodyParam bodyParam = parameters[i].getAnnotation(BodyParam.class);
-                if (null != bodyParam) {
-                    param.setParamType(AnnotationParam.PARAM_TYPE_BODY);
-                    break;
-                }
-            } while (false);
-
-            param.setType(parameters[i].getType());
-            paramList.add(param);
-        }
-        return paramList;
-    }
 
     public static String jsonDocument(){
 
@@ -465,5 +537,26 @@ public class OpenApiDocTools {
         }
 
         return "";
+    }
+
+    public static Schema getCommonSchemaDict() {
+        List<String> requiredProp = new ArrayList<>();
+        requiredProp.add("code");
+        requiredProp.add("message");
+
+        Schema schemaDict = new Schema();
+        schemaDict.required(requiredProp);
+
+        Schema schemaCode = new Schema();
+        schemaCode.setFormat("number");
+        schemaCode.setType("integer");
+        schemaDict.addProperties("code", schemaCode);
+
+        Schema schemaMessage = new Schema();
+        schemaMessage.setFormat("string");
+        schemaMessage.setType("string");
+        schemaDict.addProperties("message", schemaMessage);
+
+        return schemaDict;
     }
 }
