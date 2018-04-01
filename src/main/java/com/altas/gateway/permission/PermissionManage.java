@@ -34,7 +34,11 @@ public class PermissionManage {
         try {
             for (String permission : permissions) {
                 Permission permissionInvoke = GlobalConfig.instance().getPermissionInvokerByPermission(permission);
-                error = permissionInvoke.validatePermission(session);
+                if(null == permissionInvoke) {
+                    error = GlobalServantsConst.ERROR_CODE_OK;
+                }else {
+                    error = permissionInvoke.validatePermission(session);
+                }
             }
 
         } catch (Exception e) {

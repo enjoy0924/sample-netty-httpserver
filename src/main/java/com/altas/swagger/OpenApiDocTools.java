@@ -380,7 +380,7 @@ public class OpenApiDocTools {
                 apiResponse.setContent(content);
             }
 
-            apiResponses.addApiResponse(responseCode, apiResponse);
+            apiResponses.addApiResponse(String.format("code=%s",responseCode), apiResponse);
         }
 
         return apiResponses;

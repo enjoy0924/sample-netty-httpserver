@@ -190,10 +190,18 @@ public class HttpRequestHandlerLoader {
             param.setIndex(i);
 
             do {
+                QueryParam queryParam = parameters[i].getAnnotation(QueryParam.class);
+                if (null != queryParam) {
+                    param.setParamName(queryParam.value());
+                    param.setParamType(AnnotationParam.PARAM_TYPE_QUERY);
+                    param.getConstraint().setRequired(queryParam.required());
+                    break;
+                }
+
                 FormParam formParam = parameters[i].getAnnotation(FormParam.class);
                 if (null != formParam) {
                     param.setParamName(formParam.value());
-                    param.setParamType(AnnotationParam.PARAM_TYPE_QUERY);
+                    param.setParamType(AnnotationParam.PARAM_TYPE_FORM);
                     param.getConstraint().setRequired(formParam.required());
                     break;
                 }

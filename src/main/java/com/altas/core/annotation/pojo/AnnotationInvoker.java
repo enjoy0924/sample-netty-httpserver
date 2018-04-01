@@ -65,7 +65,8 @@ public class AnnotationInvoker {
         this.queryParams = queryParams;
     }
 
-    public Object[] reformParamsFromInvokeParamsAndHeadersAndBody(Map<String, String> queryParamDict, Map<String, String> pathParamDict, HttpHeaders headers, String body) throws ParamLackException {
+    public Object[] reformParamsFromInvokeParamsAndHeadersAndBody(Map<String, String> queryParamDict, Map<String, String> pathParamDict,
+            HttpHeaders headers, String body) throws ParamLackException {
 
         Object[] params = new Object[queryParams.size()];
         for (AnnotationParam param : queryParams) {
@@ -78,6 +79,13 @@ public class AnnotationInvoker {
                 if (null == value && param.getConstraint().required()) {
                     throw new ParamLackException("lack of required parameter : " + paramName);
                 }
+            } else if(param.getParamType() == AnnotationParam.PARAM_TYPE_FORM){
+
+                value = queryParamDict.get(paramName);
+                if (null == value && param.getConstraint().required()) {
+                    throw new ParamLackException("lack of required parameter : " + paramName);
+                }
+
             } else if (param.getParamType() == AnnotationParam.PARAM_TYPE_QUERY) {
                 //URL或者body里面的查询参数
                 value = queryParamDict.get(paramName);

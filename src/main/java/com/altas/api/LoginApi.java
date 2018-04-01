@@ -20,7 +20,7 @@ public class LoginApi {
     @Consumer(method = HttpMethod.POST, type = MimeType.URLENC)
     @Producer(type = MimeType.JSON)
     @ApiResponses({
-            @ApiResponse(responseCode = "0x0000", description = "success full",
+            @ApiResponse(responseCode = "0x1000", description = "success full",
                     content = {@Content(schema = @Schema(ref = "#/components/schemas/Account"))
             }),
             @ApiResponse(responseCode = "0x1001", description = "session time out"),
