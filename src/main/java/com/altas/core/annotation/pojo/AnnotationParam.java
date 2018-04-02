@@ -7,6 +7,7 @@ public class AnnotationParam {
     public static final int PARAM_TYPE_BODY   = 3;
     public static final int PARAM_TYPE_QUERY  = 4;
     public static final int PARAM_TYPE_FORM   = 5;
+    public static final int PARAM_TYPE_SESSION_ATTR = 6;
 
     private int index;
     private String paramName;

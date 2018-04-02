@@ -110,26 +110,32 @@ public class HttpInvokerHandler {
 
         String uri = fullHttpRequest.uri();
         try {
+            //1.提取出Query Parameters
             Map<String, String> queryParamDict = HttpUtils.getQueryParamDictFromRequestUri(uri);
             String contentType = fullHttpRequest.headers().get(HttpHeaderNames.CONTENT_TYPE);
 
+            //2.提取出Form Parameters
+            Map<String, String> formParamDict = null;
             String body = HttpUtils.getBodyString(fullHttpRequest, fullHttpRequest.content());
             if (null != contentType && contentType.contains(MimeType.URLENC.getType())) {
-                queryParamDict.putAll(HttpUtils.getQueryParamDictFromString(body));
+                formParamDict = HttpUtils.getQueryParamDictFromString(body);
             }
 
             /**从Session里面取出部分参数放入这里面*/
+            Map<String, String> sessionAttr = null;
             if(null != session) {
-//                queryParamDict.put(CONST.KEY_SESSION, session.getSessionId());
+                sessionAttr.put(CONST.SYS_AUTO_INJECT_PARAM_KEY_SESSION_ID, session.getSessionId());
                 String userId = session.getUserId();
                 if (null != userId && !userId.trim().isEmpty()) {
-                    queryParamDict.put(CONST.SYS_AUTO_INJECT_PARAM_KEY_USER_ID, userId);
+                    sessionAttr.put(CONST.SYS_AUTO_INJECT_PARAM_KEY_USER_ID, userId);
                 }
             }
 
             Map<String, String> pathParamDict = HttpUtils.getPathParamDictFromRequestUriAndPattern(uri, invoker.getRegexUrl());
             //获取方法里面对应的查询参数
-            Object[] params = invoker.reformParamsFromInvokeParamsAndHeadersAndBody(queryParamDict, pathParamDict, fullHttpRequest.headers(), body);
+            Object[] params = invoker.reformParamsFromInvokeParamsAndHeadersAndBody(
+                    queryParamDict, formParamDict, pathParamDict, fullHttpRequest.headers(), body, sessionAttr
+            );
 
             return invoker.getMethod().invoke(invoker.getObject(), params);
         }catch (UnsupportedEncodingException e){

@@ -5,6 +5,9 @@ import com.altas.core.annotation.restful.enumeration.HttpMethod;
 import com.altas.core.annotation.restful.enumeration.MimeType;
 import com.altas.gateway.constant.CONST;
 import com.altas.gateway.schema.Response;
+import com.altas.gateway.session.Session;
+import com.altas.gateway.session.SessionManager;
+import com.altas.gateway.session.SessionState;
 import com.altas.gateway.tars.globalservants.GlobalServantsConst;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,8 +31,15 @@ public class LoginApi {
      })
     public Response login(@FormParam(value = "loginName", required = true) String username,
                                      @FormParam(value = "password", required = true) String password,
-                                     @HeaderParam(value = "Cookie-Session", required = false) String sessionId,
+                                     @SessionAttr(value = CONST.SYS_AUTO_INJECT_PARAM_KEY_SESSION_ID, required = false) String sessionId,
                                      @HeaderParam(value = "User-Agent", required = false) String userAgent) {
+
+        Session session = SessionManager.instance().getSessionBySessionId(sessionId);
+
+        //成功之后刷新Session的值
+        session.setSessionState(SessionState.LOGIN);
+        SessionManager.instance().refreshSession(session);
+
 
         /**这里获取登录的操作系统版本，供统计分析使用*/
         return new Response(GlobalServantsConst.ERROR_CODE_OK);

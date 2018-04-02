@@ -17,9 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by zhangy on 2017/7/6.
- */
+
 public class HttpRequestHandlerLoader {
 
     private static HttpRequestHandlerLoader instance = new HttpRequestHandlerLoader();
@@ -214,7 +212,6 @@ public class HttpRequestHandlerLoader {
                     break;
                 }
 
-
                 PathParam pathParam = parameters[i].getAnnotation(PathParam.class);
                 if (null != pathParam) {
                     param.setParamName(pathParam.value());
@@ -222,6 +219,12 @@ public class HttpRequestHandlerLoader {
                     break;
                 }
 
+                SessionAttr sessionAttr = parameters[i].getAnnotation(SessionAttr.class);
+                if (null != sessionAttr) {
+                    param.setParamName(sessionAttr.value());
+                    param.setParamType(AnnotationParam.PARAM_TYPE_SESSION_ATTR);
+                    break;
+                }
 
                 BodyParam bodyParam = parameters[i].getAnnotation(BodyParam.class);
                 if (null != bodyParam) {

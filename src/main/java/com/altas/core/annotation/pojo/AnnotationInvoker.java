@@ -1,6 +1,7 @@
 package com.altas.core.annotation.pojo;
 
 import com.altas.gateway.exception.ParamLackException;
+import com.altas.gateway.session.Session;
 import com.altas.gateway.utils.ConvertUtils;
 import io.netty.handler.codec.http.HttpHeaders;
 
@@ -65,8 +66,8 @@ public class AnnotationInvoker {
         this.queryParams = queryParams;
     }
 
-    public Object[] reformParamsFromInvokeParamsAndHeadersAndBody(Map<String, String> queryParamDict, Map<String, String> pathParamDict,
-            HttpHeaders headers, String body) throws ParamLackException {
+    public Object[] reformParamsFromInvokeParamsAndHeadersAndBody(Map<String, String> queryParamDict, Map<String, String> formParamDict, Map<String, String> pathParamDict,
+                                                                  HttpHeaders headers, String body, Map<String, String> sessionAttr) throws ParamLackException {
 
         Object[] params = new Object[queryParams.size()];
         for (AnnotationParam param : queryParams) {
@@ -81,7 +82,7 @@ public class AnnotationInvoker {
                 }
             } else if(param.getParamType() == AnnotationParam.PARAM_TYPE_FORM){
 
-                value = queryParamDict.get(paramName);
+                value = formParamDict.get(paramName);
                 if (null == value && param.getConstraint().required()) {
                     throw new ParamLackException("lack of required parameter : " + paramName);
                 }
@@ -99,6 +100,12 @@ public class AnnotationInvoker {
             } else if (param.getParamType() == AnnotationParam.PARAM_TYPE_BODY) {
                 //Body参数
                 value = body;
+            } else if(param.getParamType() == AnnotationParam.PARAM_TYPE_SESSION_ATTR){
+
+                value = queryParamDict.get(paramName);
+                if (null == value && param.getConstraint().required()) {
+                    throw new ParamLackException("lack of required parameter : " + paramName);
+                }
             }
 
             params[param.getIndex()] = ConvertUtils.forceTypeConvert(type, value);

@@ -38,11 +38,11 @@ public class HttpUtils {
         if(null == str || str.trim().isEmpty())
             return new HashMap<>();
         else {
-//            try {
-//                return getKvMap(str);
-//            } catch (KeyValueUnpairException | UnsupportedEncodingException e) {
-//                e.printStackTrace();
-//            }
+            try {
+                return getKvMap(str);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
 
         return new HashMap<>();
@@ -66,18 +66,33 @@ public class HttpUtils {
         return body;
     }
 
-//    public  static  String getBodyString(HttpRequest httpRequest, HttpContent httpContent) throws
-//            UnsupportedEncodingException {
-//        ByteBuf buf = httpContent.content();
-//        String encoding = httpRequest.headers().get(HttpHeaderName.CONTENT_ENCODING.getName());
-//        if (null == encoding) {
-//            encoding = "UTF-8";
-//        }
-//        byte[] bodyBytes = new byte[buf.readableBytes()];
-//        buf.readBytes(bodyBytes);
-//        String body = new String(bodyBytes, encoding);
-//        return body;
-//    }
+
+    private  static  Map<String,String> getKvMap(String kvString) throws UnsupportedEncodingException {
+        Map<String, String> result = new HashMap<String, String>();
+        String[] kvs = kvString.split("&");
+        for (int i = 0; i < kvs.length; i++) {
+
+            String[] kv = kvs[i].split("=");
+            if (kv.length < 2) {
+                continue;
+            }
+            result.put(kv[0], filterValue(kv[1]));
+        }
+        return result;
+    }
+
+    private static String filterValue(String value) {
+        if(null == value)
+            return "";
+
+        try {
+            value=(null==value||value.trim().isEmpty())?"":URLDecoder.decode(value,"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return value;
+    }
 
     private static boolean isKvBody(HttpRequest httpRequest,HttpContent httpContent) {
         ByteBuf buf = httpContent.content();

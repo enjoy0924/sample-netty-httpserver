@@ -220,6 +220,7 @@ public class OpenApiDocTools {
             List<PathParam> pathParamAnnotations = new ArrayList<>();
             List<HeaderParam> headerParamAnnotations = new ArrayList<>();
             List<FormParam> formParamAnnotations = new ArrayList<>();
+            List<SessionAttr> sessionAttrAnnotations = new ArrayList<>();
             Annotation[][] annotationArray = method.getParameterAnnotations();
             for(Annotation[] annotations: annotationArray){
                 for(Annotation annotation : annotations){
@@ -231,11 +232,14 @@ public class OpenApiDocTools {
                         headerParamAnnotations.add((HeaderParam) annotation);
                     }else if(annotation instanceof FormParam){
                         formParamAnnotations.add((FormParam) annotation);
+                    }else if(annotation instanceof SessionAttr){
+                        sessionAttrAnnotations.add((SessionAttr)annotation);
                     }
                 }
             }
 
-            List<io.swagger.v3.oas.models.parameters.Parameter> parameters = getParametersByAnnotation(queryParamAnnotations, pathParamAnnotations, headerParamAnnotations);
+            List<io.swagger.v3.oas.models.parameters.Parameter> parameters = getParametersByAnnotation(
+                    queryParamAnnotations, pathParamAnnotations, headerParamAnnotations, sessionAttrAnnotations);
 
             RequestBody requestBody = getRequestBodyByAnnotation(method.getAnnotation(Consumer.class), formParamAnnotations);
             ApiResponses apiResponses = getResponseByAnnotation(method.getAnnotation(io.swagger.v3.oas.annotations.responses.ApiResponses.class), method.getAnnotation(Producer.class));
@@ -284,7 +288,9 @@ public class OpenApiDocTools {
         return true;
     }
 
-    private static List<io.swagger.v3.oas.models.parameters.Parameter> getParametersByAnnotation(List<QueryParam> queryParamAnnotations, List<PathParam> pathParamAnnotations, List<HeaderParam> headerParamAnnotations) {
+    private static List<io.swagger.v3.oas.models.parameters.Parameter> getParametersByAnnotation(
+            List<QueryParam> queryParamAnnotations, List<PathParam> pathParamAnnotations, List<HeaderParam> headerParamAnnotations, List<SessionAttr> sessionAttrAnnotations) {
+
         List<io.swagger.v3.oas.models.parameters.Parameter> parameters = new ArrayList<>();
         for(PathParam pathParamAnnotation : pathParamAnnotations){
             io.swagger.v3.oas.models.parameters.Parameter parameter = new io.swagger.v3.oas.models.parameters.Parameter();
@@ -325,6 +331,22 @@ public class OpenApiDocTools {
             Schema schema = new Schema();
             schema.setType(queryParamAnnotation.type());
             schema.setFormat(queryParamAnnotation.format());
+
+            parameter.setSchema(schema);
+
+            parameters.add(parameter);
+        }
+
+        for(SessionAttr sessionAttrAnnotation : sessionAttrAnnotations){
+            io.swagger.v3.oas.models.parameters.Parameter parameter = new io.swagger.v3.oas.models.parameters.Parameter();
+            parameter.setRequired(sessionAttrAnnotation.required());
+            parameter.setName(sessionAttrAnnotation.value());
+            parameter.setIn(ParameterIn.COOKIE.name().toLowerCase());
+            parameter.setDescription("system auto inject when session is available!");
+
+            Schema schema = new Schema();
+            schema.setType("string");
+//            schema.setFormat(queryParamAnnotation.format());
 
             parameter.setSchema(schema);
 

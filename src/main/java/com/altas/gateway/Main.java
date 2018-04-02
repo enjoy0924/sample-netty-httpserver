@@ -10,10 +10,7 @@ import com.altas.gateway.utils.LoggerHelper;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by zhangy on 2017/6/30.
- *
- */
+
 public class Main {
 
     public static void main(String[] args) throws Exception {
