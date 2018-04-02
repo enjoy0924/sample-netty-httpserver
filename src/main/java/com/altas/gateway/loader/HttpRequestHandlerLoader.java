@@ -216,6 +216,7 @@ public class HttpRequestHandlerLoader {
                 if (null != pathParam) {
                     param.setParamName(pathParam.value());
                     param.setParamType(AnnotationParam.PARAM_TYPE_PATH);
+                    param.getConstraint().setRequired(pathParam.required());
                     break;
                 }
 
@@ -223,6 +224,7 @@ public class HttpRequestHandlerLoader {
                 if (null != sessionAttr) {
                     param.setParamName(sessionAttr.value());
                     param.setParamType(AnnotationParam.PARAM_TYPE_SESSION_ATTR);
+                    param.getConstraint().setRequired(sessionAttr.required());
                     break;
                 }
 

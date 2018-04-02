@@ -102,7 +102,7 @@ public class AnnotationInvoker {
                 value = body;
             } else if(param.getParamType() == AnnotationParam.PARAM_TYPE_SESSION_ATTR){
 
-                value = queryParamDict.get(paramName);
+                value = sessionAttr.get(paramName);
                 if (null == value && param.getConstraint().required()) {
                     throw new ParamLackException("lack of required parameter : " + paramName);
                 }

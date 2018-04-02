@@ -22,6 +22,7 @@ import io.netty.util.AsciiString;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class HttpInvokerHandler {
@@ -122,7 +123,7 @@ public class HttpInvokerHandler {
             }
 
             /**从Session里面取出部分参数放入这里面*/
-            Map<String, String> sessionAttr = null;
+            Map<String, String> sessionAttr = new HashMap<>();
             if(null != session) {
                 sessionAttr.put(CONST.SYS_AUTO_INJECT_PARAM_KEY_SESSION_ID, session.getSessionId());
                 String userId = session.getUserId();

@@ -29,7 +29,7 @@ public class LoginApi {
             @ApiResponse(responseCode = "0x1001", description = "session time out"),
             @ApiResponse(responseCode = "0x1002", description = "login at other place")
      })
-    public Response login(@FormParam(value = "loginName", required = true) String username,
+    public Response login(@FormParam(value = "username", required = true) String username,
                                      @FormParam(value = "password", required = true) String password,
                                      @SessionAttr(value = CONST.SYS_AUTO_INJECT_PARAM_KEY_SESSION_ID, required = false) String sessionId,
                                      @HeaderParam(value = "User-Agent", required = false) String userAgent) {
@@ -38,6 +38,7 @@ public class LoginApi {
 
         //成功之后刷新Session的值
         session.setSessionState(SessionState.LOGIN);
+        session.setUserName(username);
         SessionManager.instance().refreshSession(session);
 
 
